@@ -1,9 +1,20 @@
+# Check if the light is on or of depending of the hysteresis and the previous trace
+check_switch <- function(trace_point, switch_off, switch_on) {
+  
+  if (trace_point == FALSE && switch_on == TRUE) { trace_point <- TRUE}
+  
+  if (trace_point == TRUE && switch_off == TRUE) {trace_point <- FALSE}
+  
+  return(trace_point)	# return the last timestamp in the dataframe
+}
+
+
 # Set working directory where I save the data
 
-setwd("C:/Users/LocalAdmin/Desktop")
+setwd("D:/brembs/GitHub/Platform-Drosophila/Platform-Optogenetics/data/test")
 # Import in a dataframe just the values. Information concerning the experiment will be read further on if necessary. Add as.vector() if necessary.
 #filename <- id_table[a]
-filename <- "test1.dat"
+filename <- "empty-2.dat"
 skip<-36
 #filename <- paste(scan(n=1),".dat", sep="")
 data <- read.table(filename, header = FALSE, sep = "\t", quote = "\"" , dec = ".", fill = TRUE, skip = skip , comment.char = "", nrows = 6001-skip,col.names=c("n","t.s.","pos1","pos2","pos3"))

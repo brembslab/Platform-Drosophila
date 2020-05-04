@@ -1,0 +1,199 @@
+---
+title: "Optogenetics Joystick Screen"
+output: 
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    keep_md: FALSE
+---
+<style type="text/css">
+  body .main-container {
+    max-width: 1800px !important;
+  }
+  h1.title {
+  font-size: 38px;
+  color: DarkRed;
+  text-align: center;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<center>Rendered on `r format(Sys.time(), '%d %B %Y')`</center>
+
+# PI profile of all groups
+
+## Performance Index bar plot with SEM
+
+```{r PIbar, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 140, fig.width = 20, comment=NA, results='asis'}
+sequencecolors = c("lightyellow","lightyellow","orange","orange","lightyellow","lightyellow","orange","orange","lightyellow","lightyellow")
+
+PIplots <- list()
+for(x in 1:length(groupedPIs))
+  {
+    PIprofile <- groupedPIs[[x]] #get PIs
+
+    # plot graph
+     PIplots[[x]] <- ggplot(melt(na.omit(PIprofile)), aes(x=variable, y=value)) + 
+              geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+              stat_summary(geom = "bar", fun = mean, position = "dodge", fill=sequencecolors, colour="black", width=1) +
+              stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge", width=0, size=2) +
+              ggtitle(paste(names(groupedPIs)[x], ", N=",nrow(na.omit(groupedPIs[[x]])))) +
+              scale_y_continuous(breaks = seq(-1, 1, .2)) +
+              theme_light(base_size = 16) + 
+              theme(panel.grid.major.x = element_blank(),panel.grid.minor = element_blank(), panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+              theme(axis.text.y = element_text(size=18))+ 
+              ylab("PI [rel. units]") + 
+              xlab("Experiment Sequence")
+  }
+grid.arrange(grobs = PIplots, nrow=no_of_screens)
+```
+
+## Performance Index box&dotplot without notches:
+
+```{r BoxNoNotch, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 140, fig.width = 20, comment=NA, results='asis'}
+
+for(x in 1:length(groupedPIs))
+  {
+    PIprofile <- groupedPIs[[x]] #get PIs
+
+    #plot graph
+    PIplots[[x]] <- ggplot(melt(na.omit(PIprofile)), aes(x=variable, y=value)) +
+              geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+              geom_boxplot(fill = sequencecolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+              geom_jitter(data = melt(na.omit(PIprofile)), aes(variable, value), position=position_jitter(0.3), shape=21, size=3, fill="lightgrey", alpha=0.5) +
+              ggtitle(paste(names(groupedPIs)[x], ", N=",nrow(na.omit(groupedPIs[[x]])))) +
+              scale_y_continuous(breaks = seq(-1, 1, .4)) +
+              theme_light(base_size = 16) + 
+              theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+              theme(axis.text.y = element_text(size=18))+ 
+              ylab("PI [rel. units]")+ 
+              xlab("Experiment Sequence")
+    }        
+grid.arrange(grobs = PIplots, nrow=no_of_screens)
+```
+
+# Group comparisons
+
+```{r PIcomps, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, comment=NA, results='asis'}
+#####some computations to the PI dataframes
+
+for(x in 1:length(groupedPIs))
+{
+  groupedPIs[[x]]$group <- names(groupedPIs)[x] #1 add group names as variable
+  groupedPIs[[x]]$ave_tr <- rowMeans(subset(groupedPIs[[x]], select = c(training1,training2,training3,training4))) #2 average all training values
+  groupedPIs[[x]]$ave_pt <- rowMeans(subset(groupedPIs[[x]], select = c(pretest1,pretest2))) #2a average pretest values
+  groupedPIs[[x]]$te_pt <- groupedPIs[[x]]$test3-groupedPIs[[x]]$ave_pt #3 subtract pretest from final test
+  groupedPIs[[x]]$ltr_pt <- groupedPIs[[x]]$training4-groupedPIs[[x]]$ave_pt #4 subtract pretest from last training
+  groupedPIs[[x]]$atr_pt <- groupedPIs[[x]]$ave_tr-groupedPIs[[x]]$ave_pt #5 subtract pretest from averaged training
+}
+
+######Generate melted, long form dataframe with all the interesting single parameters
+PIs<-as.data.frame(matrix(ncol=7,nrow=sum(sapply(groupedPIs, nrow))))
+colnames(PIs)=c("group","last_training","test","average_training","testMpretest","lastTrainingMpretest","averTrainingMpretest") #dataframe with a grouping variable first
+PIs$group<-unlist(rbind(lapply(groupedPIs, "[", , "group")))
+PIs$last_training<-unlist(rbind(lapply(groupedPIs, "[", , "training4")))
+PIs$test<-unlist(rbind(lapply(groupedPIs, "[", , "test3")))
+PIs$average_training<-unlist(rbind(lapply(groupedPIs, "[", , "ave_tr")))
+PIs$testMpretest<-unlist(rbind(lapply(groupedPIs, "[", , "te_pt")))
+PIs$lastTrainingMpretest<-unlist(rbind(lapply(groupedPIs, "[", , "ltr_pt")))
+PIs$averTrainingMpretest<-unlist(rbind(lapply(groupedPIs, "[", , "atr_pt")))
+
+samplesizes=as.vector(table(PIs$group))
+boxes<-c(1:no_of_screens)
+boxcolors=c("blue1","blue3","blue4","forestgreen","green2","green3","deeppink1","deeppink3","deeppink4","yellow1","yellow2","yellow3","yellow4","olivedrab1","olivedrab2","olivedrab4","yellow","orange1","orange2","orange3","orange4","red1","red2","red3","white","azure2","springgreen4") #set the colors for the plots
+
+```
+
+## Last training PI
+
+```{r LastTrPI, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 8, fig.width = 16, comment=NA, results='asis'}
+
+ggplot(PIs, aes(group, last_training)) +
+    geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+    geom_boxplot(fill = boxcolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+    geom_jitter(data=PIs, aes(group, last_training), position=position_jitter(0.3), shape=21, size=3, alpha=0.5, fill="grey") +
+    scale_y_continuous(breaks = seq(-1, 1, .2)) +
+    theme_light(base_size = 16) + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+    theme(axis.text.y = element_text(size=18))+ ylab("PI of last training period [rel. units]")+ xlab("Groups")+ theme(aspect.ratio=0.5)+
+    theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+    samplesizes.annotate(boxes, samplesizes)
+```
+
+## Last training PI minus pretest
+
+```{r LastTrMpt, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 8, fig.width = 16, comment=NA, results='asis'}
+
+ggplot(PIs, aes(group, lastTrainingMpretest)) +
+    geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+    geom_boxplot(fill = boxcolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+    geom_jitter(data=PIs, aes(group, lastTrainingMpretest), position=position_jitter(0.3), shape=21, size=3, alpha=0.5, fill="grey") +
+    scale_y_continuous(breaks = seq(-1, 1, .2)) +
+    theme_light(base_size = 16) + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+    theme(axis.text.y = element_text(size=18))+ ylab("PI of last training (-PT) [rel. units]")+ xlab("Groups")+ theme(aspect.ratio=0.5)+
+    theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+    samplesizes.annotate(boxes, samplesizes)
+```
+
+## Averaged training PIs
+
+```{r AveTr, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 8, fig.width = 16, comment=NA, results='asis'}
+
+ggplot(PIs, aes(group, average_training)) +
+    geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+    geom_boxplot(fill = boxcolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+    geom_jitter(data=PIs, aes(group, average_training), position=position_jitter(0.3), shape=21, size=3, alpha=0.5, fill="grey") +
+    scale_y_continuous(breaks = seq(-1, 1, .2)) +
+    theme_light(base_size = 16) + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+    theme(axis.text.y = element_text(size=18))+ ylab("Average training PI [rel. units]")+ xlab("Groups")+ theme(aspect.ratio=0.5)+
+    theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+    samplesizes.annotate(boxes, samplesizes)
+```
+
+## Averaged training PIs minus pretest
+
+```{r AveTrMpt, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 8, fig.width = 16, comment=NA, results='asis'}
+
+ggplot(PIs, aes(group, averTrainingMpretest)) +
+    geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+    geom_boxplot(fill = boxcolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+    geom_jitter(data=PIs, aes(group, averTrainingMpretest), position=position_jitter(0.3), shape=21, size=3, alpha=0.5, fill="grey") +
+    scale_y_continuous(breaks = seq(-1, 1, .2)) +
+    theme_light(base_size = 16) + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+    theme(axis.text.y = element_text(size=18))+ ylab("Average training PI (-PT) [rel. units]")+ xlab("Groups")+ theme(aspect.ratio=0.5)+
+    theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+    samplesizes.annotate(boxes, samplesizes)
+```
+
+## Test PI
+
+```{r testPI, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 8, fig.width = 16, comment=NA, results='asis'}
+
+ggplot(PIs, aes(group, test)) +
+    geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+    geom_boxplot(fill = boxcolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+    geom_jitter(data=PIs, aes(group, test), position=position_jitter(0.3), shape=21, size=3, alpha=0.5, fill="grey") +
+    scale_y_continuous(breaks = seq(-1, 1, .2)) +
+    theme_light(base_size = 16) + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+    theme(axis.text.y = element_text(size=18))+ ylab("Test PI [rel. units]")+ xlab("Groups")+ theme(aspect.ratio=0.5)+
+    theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+    samplesizes.annotate(boxes, samplesizes)
+```
+
+## Test PI minus pretest
+
+```{r testPIMpt, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align = "center", fig.height = 8, fig.width = 16, comment=NA, results='asis'}
+
+ggplot(PIs, aes(group, testMpretest)) +
+    geom_hline(yintercept = 0, colour = "#887000", size = 1.2) +
+    geom_boxplot(fill = boxcolors, notch = FALSE, outlier.color=NA, width=0.8, size=0.6) +
+    geom_jitter(data=PIs, aes(group, testMpretest), position=position_jitter(0.3), shape=21, size=3, alpha=0.5, fill="grey") +
+    scale_y_continuous(breaks = seq(-1, 1, .2)) +
+    theme_light(base_size = 16) + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank() ,panel.border = element_rect(size = 0.5, linetype = "solid", colour = "black", fill=NA)) +
+    theme(axis.text.y = element_text(size=18))+ ylab("Test PI (-PT) [rel. units]")+ xlab("Groups")+ theme(aspect.ratio=0.5)+
+    theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+    samplesizes.annotate(boxes, samplesizes)
+```
