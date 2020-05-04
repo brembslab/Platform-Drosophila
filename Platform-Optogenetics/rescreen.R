@@ -96,7 +96,7 @@ off_wiggle2<- NA
 off_wiggle3 <- NA
 
 
-Nexp_total <- 40 # they won´t be more experiment than these #round(length(tested_flies$V1)/no_of_screens)*4
+Nexp_total <- 60 # there won't be more experiments than these #round(length(tested_flies$V1)/no_of_screens)*4
 
 effectsize_mat <- matrix(NA, 3*Nexp_total, no_of_screens)
 just_rein_mat <- matrix(NA, 3*Nexp_total, no_of_screens)
