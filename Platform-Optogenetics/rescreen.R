@@ -1,6 +1,15 @@
 rm(list=ls()) #clean memory
 gc()          #collect garbage
 
+############################################# --- begin user data --- #############################################
+datadir="D:/data/optogenetics"   #where is the data located
+codedir="B:/GitHub/screen-analysis-Joystick" #location of other R or Rmd files used in this script, normally location of this script
+htmlname="rescreen_atr1.html" #filename for HTML evaluation sheet
+tested_flies <- read.table(paste(datadir,"/rescreen_atr1.txt", sep = ""), quote="\"", comment.char="") #the text file where the data files are sorted into experimental groups
+
+############################################## --- end user data --- ##############################################
+
+#load libraries
 library(gridExtra)
 library(reshape2)
 library(ggplot2)
@@ -67,20 +76,9 @@ samplesizes.annotate <- function(boxes, samplesizes)
 }
 
 
-################################################################ Set working directory where I saved the data   ##################################################
-
-#setwd("C:/Users/LocalAdmin/Desktop/new_screens/all")
-#setwd("C:/Users/LocalAdmin/Desktop/new_screens/AMANDA/amanda_all")
-#setwd("C:/Users/LocalAdmin/Desktop/new_screens/SAURABH/saurabh_all")
-setwd("D:/data/optogenetics")
-codedir="B:/GitHub/screen-analysis-Joystick"
 ########################################## Initialize some parameters  ###########################################
 
-
-#tested_flies <- read.table("C:/Users/LocalAdmin/Desktop/new_screens/all/all.txt", quote="\"", comment.char="")
-#tested_flies <- read.table("C:/Users/LocalAdmin/Desktop/new_screens/AMANDA/amanda_all/amanda_all.txt", quote="\"", comment.char="")
-#tested_flies <- read.table("C:/Users/LocalAdmin/Desktop/new_screens/SAURABH/saurabh_all/saurabh_all.txt", quote="\"", comment.char="")
-tested_flies <- read.table("D:/data/optogenetics/rescreen_atr2.txt", quote="\"", comment.char="")
+setwd(datadir)
 all_screens <- unique(tested_flies$V2)
 no_of_screens <- length(all_screens)
 skip<-37
@@ -749,6 +747,6 @@ barplot(used_traces,las=2,main = "mixed experiments")
 
 #### call RMarkdown to generate HTML file with evaluations #################################
 rmarkdown::render(paste(codedir,"/rescreen.Rmd", sep=""), 
-                  output_file = "rescreen_atr2.html", 
-                  output_dir = "D:/data/optogenetics")
+                  output_file = paste(htmlname), 
+                  output_dir = datadir)
 #### end RMarkdown for project evaluations #################################################
