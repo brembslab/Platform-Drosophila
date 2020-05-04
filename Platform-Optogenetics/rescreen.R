@@ -4,9 +4,8 @@ gc()          #collect garbage
 ############################################# --- begin user data --- #############################################
 datadir="D:/data/optogenetics"   #where is the data located
 codedir="B:/GitHub/screen-analysis-Joystick" #location of other R or Rmd files used in this script, normally location of this script
-htmlname="rescreen_atr1.html" #filename for HTML evaluation sheet
-tested_flies <- read.table(paste(datadir,"/rescreen_atr1.txt", sep = ""), quote="\"", comment.char="") #the text file where the data files are sorted into experimental groups
-
+htmlname="rescreen.html" #filename for HTML evaluation sheet
+groupfilename="rescreen_all.txt" #filename for text file with datafiles assigned to experimental groups
 ############################################## --- end user data --- ##############################################
 
 #load libraries
@@ -77,7 +76,7 @@ samplesizes.annotate <- function(boxes, samplesizes)
 
 
 ########################################## Initialize some parameters  ###########################################
-
+tested_flies <- read.table(paste(datadir,"/",groupfilename, sep = ""), quote="\"", comment.char="#") #load group file
 setwd(datadir)
 all_screens <- unique(tested_flies$V2)
 no_of_screens <- length(all_screens)
