@@ -3,7 +3,7 @@ gc()          #collect garbage
 
 ############################################# --- begin user data --- #############################################
 datadir="D:/data/optogenetics"   #where is the data located
-codedir="B:/GitHub/screen-analysis-Joystick" #location of other R or Rmd files used in this script, normally location of this script
+codedir="B:/GitHub/Platform-Drosophila/Platform-Optogenetics" #location of other R or Rmd files used in this script, normally location of this script
 htmlname="rescreen.html" #filename for HTML evaluation sheet
 groupfilename="rescreen_all.txt" #filename for text file with datafiles assigned to experimental groups
 ############################################## --- end user data --- ##############################################
@@ -12,6 +12,7 @@ groupfilename="rescreen_all.txt" #filename for text file with datafiles assigned
 library(gridExtra)
 library(reshape2)
 library(ggplot2)
+library(BayesFactor)
 
 
 #################################################################### Functions ####################################################
@@ -65,12 +66,23 @@ all_false <- function(thres,trace,window=4800) {
   
 }
 
+############ Function to annotate plots after stats #########
+
+#Wilcoxon annotations
+wilcox.annotate <- function(boxes, wilcoxon)
+{
+  annotate("text",
+           x=boxes,
+           y=1.2, vjust = 0.5,
+           label=paste("p=",wilcoxon[boxes]))
+}
+
 #samplesizes annotations
 samplesizes.annotate <- function(boxes, samplesizes)
 {
   annotate("text",
            x=boxes,
-           y=-Inf, vjust = -0.5,
+           y=-1.2, vjust = 0.5,
            label=paste("N=", samplesizes[boxes]))
 }
 
