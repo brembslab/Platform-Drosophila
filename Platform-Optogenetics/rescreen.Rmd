@@ -104,7 +104,8 @@ PIs$testMpretest<-unlist(rbind(lapply(groupedPIs, "[", , "te_pt")))
 PIs$lastTrainingMpretest<-unlist(rbind(lapply(groupedPIs, "[", , "ltr_pt")))
 PIs$averTrainingMpretest<-unlist(rbind(lapply(groupedPIs, "[", , "atr_pt")))
 
-boxcolors=c("khaki","olivedrab3","cornflowerblue","goldenrod1","indianred1","plum3","green") #set the colors for the plots
+colors=c("khaki","olivedrab3","cornflowerblue","goldenrod1","indianred1","plum3","green") #set the colors for the plots
+boxcolors=head(colors,length(all_screens))  #set graph colors to number of groups
 samplesizes=as.vector(table(PIs$group))
 boxes<-c(1:no_of_screens)
 
