@@ -2,10 +2,10 @@ rm(list=ls()) #clean memory
 gc()          #collect garbage
 
 ############################################# --- begin user data --- #############################################
-datadir="D:/data/kurs_js"   #where is the data located
+datadir="D:/data/optogenetics"   #where is the data located
 codedir="B:/GitHub/Platform-Drosophila/Platform-Optogenetics" #location of other R or Rmd files used in this script, normally location of this script
-htmlname="kurs.html" #filename for HTML evaluation sheet
-groupfilename="textfile.txt" #filename for text file with datafiles assigned to experimental groups
+htmlname="aida.html" #filename for HTML evaluation sheet
+groupfilename="rescreen_all.txt" #filename for text file with datafiles assigned to experimental groups
 ############################################## --- end user data --- ##############################################
 
 #load libraries
