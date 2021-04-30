@@ -2,10 +2,26 @@ rm(list=ls()) #clean memory
 gc()          #collect garbage
 
 ############################################# --- begin user data --- #############################################
-datadir="m:/ppng21"   #where is the data located
+datadir="D:/brembs/filr/My Files/brembslab/Raw data, Optogenetics, Joystick, Aida Kumpf/THD'"   #where is the data located
 codedir="B:/GitHub/Platform-Drosophila/Platform-Optogenetics" #location of other R or Rmd files used in this script, normally location of this script
-htmlname="course_pooled.html" #filename for HTML evaluation sheet
-groupfilename="course.txt" #filename for text file with datafiles assigned to experimental groups
+htmlname="alternate.html" #filename for HTML evaluation sheet
+groupfilename="THD'.txt" #filename for text file with datafiles assigned to experimental groups
+#-----some variables for special cases------#
+#colors for plotting
+rescreencolors=c("lightyellow","orange","orange","orange","orange","orange","orange","orange","orange","lightyellow")
+alternatecolors=c("lightyellow","orange","lightyellow","orange","lightyellow","orange","lightyellow","orange","lightyellow","orange")
+sequencecolors = alternatecolors
+###experimental design
+#overall
+rescreendesign=c("pretest","training1","training2","training3","training4","training5","training6","training7","training8","test")
+alternatedesign=c("pretest","training1","test1","training2","test2","training3","test3","training4","test4","training5")
+design=alternatedesign
+#training periods
+rescreentraining= c("training1","training2","training3","training4","training5","training6","training7","training8")
+alternatetraining= c("training1", "training2", "training3", "training4", "training5")
+trainingvariables=alternatetraining
+lasttraining="training5"
+
 ############################################## --- end user data --- ##############################################
 
 #load libraries
@@ -13,9 +29,7 @@ library(gridExtra)
 library(reshape2)
 library(ggplot2)
 library(BayesFactor)
-library(dabestr)
-library(raincloudplots)
-library(data.table)
+
 
 #################################################################### Functions ####################################################
 
@@ -290,7 +304,7 @@ for(j in 1:no_of_screens)
   used_traces[j]<-count
 
   # Boxplot of the PIs
-  boxplot(PI_platform, col="grey",xlab="",ylab="PI",main=group_name, ylim = c(-1, 1),names=c("Pretest","Training","Training","Training","Training","Training","Training","Training","Training","Test"), cex.lab=1.5, cex.axis = 1.2)
+  boxplot(PI_platform, col="grey",xlab="",ylab="PI",main=group_name, ylim = c(-1, 1),names=design, cex.lab=1.5, cex.axis = 1.2)
   abline(h = 0, untf = FALSE, col="black",lwd=3)
   group <- NULL
   for(s in 1:10){
@@ -303,12 +317,12 @@ for(j in 1:no_of_screens)
   
   matplot(t(PI_platform[accepted_flies,]), type = c("b"),xlab=group_name,main=group_name, pch=1,col = 1:4)
 
-colnames(PI_platform)<-c("pretest","training1","training2","training3","training4","training5","training6","training7","training8","test")
+colnames(PI_platform)<-design
 groupedPIs[[j]]=as.data.frame(na.omit(PI_platform)) #store the PIs without the excluded flies
     
 }  #for nofScreens
 
-names(groupedPIs) <- as.character(all_screens) #name the list elements in the list if PIs
+names(groupedPIs) <- as.character(all_screens) #name the list elements in the list of PIs
 
 colnames(effectsize_mat) <- as.character(all_screens)
 colnames(just_rein_mat) <- as.character(all_screens)
@@ -370,7 +384,7 @@ barplot(used_traces,las=2,main = "mixed experiments")
 ####################################
 
 #### call RMarkdown to generate HTML file with evaluations #################################
-rmarkdown::render(paste(codedir,"/rescreen.Rmd", sep=""), 
+rmarkdown::render(paste(codedir,"/rescreen_alternate.Rmd", sep=""), 
                   output_file = paste(htmlname), 
                   output_dir = datadir)
 #### end RMarkdown for project evaluations #################################################
